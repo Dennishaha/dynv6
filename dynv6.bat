@@ -2,6 +2,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 chcp 65001 >nul
+title Dynv6 Auto Upload Script
 
 :: 使用前可将脚本加载于 组策略-本地计算机策略-计算机配置-Windows设置-启动
 
