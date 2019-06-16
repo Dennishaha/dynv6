@@ -31,7 +31,7 @@ for /f "tokens=1,* delims=:" %%a in ('ipconfig ^| findstr /i /r /c:"^   IPv6.*" 
 :: 有变更时，上传 
 if not "%ipv6%"=="%ipv6.old%" (
 	>"%tmp%\dynv6.log" echo;
-	bitsadmin /transfer %random% /download /dynamic "%Url%" "%tmp%\dynv6.log"
+	bitsadmin /transfer %random% /download "%Url%" "%tmp%\dynv6.log"
 	findstr /i "unchanged updated" "%tmp%\dynv6.log" || (
 		%MsgBox% "Some errors have occurred and you can check the log file for information.  %tmp%\dynv6.log"
 	)
