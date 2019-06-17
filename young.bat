@@ -32,19 +32,18 @@ echo;
 :Head
 
 netsh interface show interface %UseCard% | find "   Connect state:        Connected" >nul && (
-	rasdial | find /i "My PPPOE Link" >nul && (
-		<nul set /p "=%UseCard% 已连接。 "
-	)
 	rasdial | find /i "My PPPOE Link" >nul || (
-		echo;
-		call :Connect
+		ping 8.8.8.8 /n 1 | find "PING: transmit failed. General failure." >nul && (
+			call :Connect
+		)
 	)
 ) || (
-	<nul set /p "=%UseCard% 网线已断开。 "
 	rasdial "my pppoe link" /disconnect >nul
 )
+
 timeout /t 1 /nobreak >nul
 goto :Head
+
 
 :Connect
 set /a times+=1
@@ -58,7 +57,10 @@ start "" "%Client%"
 
 for /l %%i in (1,1,15) do (
 	timeout /t 1 /nobreak >nul
-	rasdial | find /i "My PPPOE Link" >nul && goto :Connect-ringout
+	rasdial | find /i "My PPPOE Link" >nul && (
+		echo;%UseCard% 已连接。 
+		goto :Connect-ringout
+	)
 	if "%%i"=="15" echo;%UseCard% 连接超时，请检查客户端状态。 
 )
 :Connect-ringout
