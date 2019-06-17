@@ -6,11 +6,13 @@ title Young Deamon Process
 
 :: 预设值 
 set Client=%ProgramFiles(x86)%\dial_client\Auth_Supplicant.exe
-set UseCard="以太网 5"
+set UseCard="以太网"
 set DisCard="AC9260";"蓝牙网络连接 2"
 set Stop=
 
-for %%i in ("%ClientPath%") do set "ClientName=%%~nxi"
+for %%i in ("%Client%") do set "ClientName=%%~nxi"
+
+set times=0
 
 :: 运行检查 
 if not exist "%Client%" 1>&2 echo;客户端 "%Client%" 缺失。 
@@ -30,22 +32,39 @@ echo;
 :Head
 
 netsh interface show interface %UseCard% | find "   Connect state:        Connected" >nul && (
-	timeout /t 1 /nobreak >nul
-	goto :Head
+	rasdial | find /i "My PPPOE Link" >nul && (
+		<nul set /p "=%UseCard% 已连接。 "
+	)
+	rasdial | find /i "My PPPOE Link" >nul || (
+		echo;
+		call :Connect
+	)
+) || (
+	<nul set /p "=%UseCard% 网线已断开。 "
+	rasdial "my pppoe link" /disconnect >nul
 )
+timeout /t 1 /nobreak >nul
+goto :Head
 
-1>&2 echo;%UseCard% 未连接，正尝试链接。 
+:Connect
+set /a times+=1
 
-rasdial "my pppoe link" /disconnect
-for %%i in ("%ClientName%";%Stop%) do taskkill /f /im "%%~i" /t 2>nul
+echo;%UseCard% 网线已接入，正在尝试链接（第 %times% 次）。 
 
-for %%i in (%DisCard%) do netsh interface set interface "%%~i" disabled
+for %%i in ("%ClientName%";%Stop%) do taskkill /f /im "%%~i" /t >nul 2>nul
+for %%i in (%DisCard%) do netsh interface set interface "%%~i" disabled >nul
+
 start "" "%Client%"
 
-timeout /t 6 /nobreak >nul
+for /l %%i in (1,1,15) do (
+	timeout /t 1 /nobreak >nul
+	rasdial | find /i "My PPPOE Link" >nul && goto :Connect-ringout
+	if "%%i"=="15" echo;%UseCard% 连接超时，请检查客户端状态。 
+)
+:Connect-ringout
 
-taskkill /f /im "%ClientName%" /t
-for %%i in (%DisCard%) do netsh interface set interface "%%~i" enabled
+taskkill /f /im "%ClientName%" /t >nul 2>nul
+for %%i in (%DisCard%) do netsh interface set interface "%%~i" enabled >nul
 
-goto :Head
+goto :EOF
 
