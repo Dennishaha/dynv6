@@ -7,7 +7,7 @@ title Young Deamon Process
 :: 预设值 
 set Client=%ProgramFiles(x86)%\dial_client\Auth_Supplicant.exe
 set UseCard="以太网"
-set DisCard="AC9260";"蓝牙网络连接 2"
+set DisCard="AC9260";"蓝牙网络连接 2""VMware Network Adapter VMnet1";"VMware Network Adapter VMnet8"
 set Stop=
 
 for %%i in ("%Client%") do set "ClientName=%%~nxi"
@@ -31,9 +31,9 @@ echo;
 
 :Head
 
-netsh interface show interface %UseCard% | find "   Connect state:        Connected" >nul && (
+netsh interface show interface %UseCard% | find /i "   Connect state:        Connected" >nul && (
 	rasdial | find /i "My PPPOE Link" >nul || (
-		ping 8.8.8.8 /n 1 | find "PING: transmit failed. General failure." >nul && (
+		ping 8.8.8.8 /n 1 | find /i "ms out" >nul || (
 			call :Connect
 		)
 	)

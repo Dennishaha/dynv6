@@ -18,6 +18,10 @@ set "Url=http://dynv6.com/api/update?hostname=%hostname%&ipv6=^!ipv6^!&token=%to
 bitsadmin /? >nul || (%MsgBox% "bitsadmin.exe is missing." & exit /b 1)
 timeout /? >nul || (%MsgBox% "timeout.exe is missing." & exit /b 1)
 
+:: 预设命令
+:: netsh advfirewall firewall set rule name="远程桌面 - 用户模式(TCP-In)" new enable=yes
+:: netsh advfirewall firewall set rule name="远程桌面 - 用户模式(UDP-In)" new enable=yes
+
 :loop
 
 :: 获取IPv6 
